@@ -1,0 +1,12 @@
+-- Step 1: Create a database
+CREATE DATABASE iot_car_data;
+
+-- Step 2: Use the new database
+USE iot_car_data;
+
+-- Step 3: Create a table for distance readings
+CREATE TABLE distance_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    distance_cm INT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
