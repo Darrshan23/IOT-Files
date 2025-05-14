@@ -2,16 +2,16 @@ import serial
 import mariadb
 import time
 
-# Connect to Arduino
+# Connect to Arduino (adjust the port if needed, use '/dev/ttyS1' or '/dev/ttyUSB0' on your Pi)
 arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
 time.sleep(2)
 
 # Connect to MariaDB
 conn = mariadb.connect(
-    user="root",
-    password="your_password_here",
-    host="localhost",
-    database="iotcar"
+    user="root",              # root is the default username
+    password="root",          # Update this with your actual root password
+    host="localhost",         # Running on the same Raspberry Pi VM
+    database="iot_car_data"   # Database name
 )
 cursor = conn.cursor()
 
@@ -24,7 +24,10 @@ while True:
             if len(parts) > 1:
                 cm_value = parts[1].replace("cm", "").strip()
                 print("Received:", cm_value)
-                cursor.execute("INSERT INTO sensor_data (value) VALUES (?)", (cm_value,))
+
+                # Insert into distance_logs table with timestamp
+                cursor.execute("INSERT INTO distance_logs (distance_cm) VALUES (?)", (cm_value,))
                 conn.commit()
     except Exception as e:
         print("Error:", e)
+
