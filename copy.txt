@@ -37,12 +37,16 @@ class DistanceLogger:
         except mysql.connector.Error as e:
             print(f"Database connection error: {e}")
 
-    def log_distance(self, distance_cm):
+    def log_full_data(self, distance_cm, direction, obstacle_detected, car_speed, servo_angle):
         try:
-            query = "INSERT INTO distance_logs (distance_cm) VALUES (%s)"
-            self.db_cursor.execute(query, (distance_cm,))
+            query = """
+                INSERT INTO distance_logs
+                (distance_cm, direction, obstacle_detected, car_speed, servo_angle)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            self.db_cursor.execute(query, (distance_cm, direction, obstacle_detected, car_speed, servo_angle))
             self.db_conn.commit()
-            print(f"Logged: {distance_cm} cm")
+            print(f"Logged: {distance_cm} cm, {direction}, Obstacle: {obstacle_detected}, Speed: {car_speed}, Angle: {servo_angle}")
         except mysql.connector.Error as e:
             print(f"DB insert error: {e}")
 
@@ -51,14 +55,21 @@ class DistanceLogger:
         try:
             while True:
                 if self.ser.in_waiting > 0:
-                    line = self.ser.readline().decode('utf-8').strip()
+                    line = self.ser.readline().decode('utf-8', errors='ignore').strip()
                     print("Raw line:", line)
-                    if line.startswith("Distance:"):
-                        parts = line.split(":")
-                        if len(parts) > 1:
-                            cm_value = parts[1].replace("cm", "").strip()
-                            if cm_value.isdigit():
-                                self.log_distance(int(cm_value))
+                    if line.startswith("LOG:"):
+                        # Example: LOG:135,forward,0,190,115
+                        parts = line[4:].split(",")
+                        if len(parts) == 5:
+                            try:
+                                distance_cm = int(parts[0])
+                                direction = parts[1]
+                                obstacle_detected = int(parts[2])
+                                car_speed = int(parts[3])
+                                servo_angle = int(parts[4])
+                                self.log_full_data(distance_cm, direction, obstacle_detected, car_speed, servo_angle)
+                            except ValueError:
+                                print("Invalid values in LOG line.")
                 sleep(0.1)
         except KeyboardInterrupt:
             print("\nExiting...")
