@@ -1,17 +1,17 @@
 import serial
-import mariadb
+import mysql.connector as mariadb  # ✅ Import with the correct alias
 import time
 
-# Connect to Arduino (adjust the port if needed, use '/dev/ttyS1' or '/dev/ttyUSB0' on your Pi)
-arduino = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+# Connect to Arduino (you already confirmed ttyS0 works)
+arduino = serial.Serial('/dev/ttyS0', 9600, timeout=1)
 time.sleep(2)
 
 # Connect to MariaDB
 conn = mariadb.connect(
-    user="root",              # root is the default username
-    password="root",          # Update this with your actual root password
-    host="localhost",         # Running on the same Raspberry Pi VM
-    database="iot_car_data"   # Database name
+    user="root",
+    password="root",
+    host="localhost",
+    database="iot_car_data"
 )
 cursor = conn.cursor()
 
@@ -19,15 +19,13 @@ while True:
     try:
         line = arduino.readline().decode().strip()
         if line.startswith("Distance:"):
-            # Extract numeric value
             parts = line.split(":")
             if len(parts) > 1:
                 cm_value = parts[1].replace("cm", "").strip()
                 print("Received:", cm_value)
 
-                # Insert into distance_logs table with timestamp
-                cursor.execute("INSERT INTO distance_logs (distance_cm) VALUES (?)", (cm_value,))
+                # Use %s placeholder for mysql.connector
+                cursor.execute("INSERT INTO distance_logs (distance_cm) VALUES (%s)", (cm_value,))
                 conn.commit()
     except Exception as e:
         print("Error:", e)
-
