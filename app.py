@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template
 import mysql.connector
 
 app = Flask(__name__)
@@ -18,17 +18,12 @@ def get_data():
     cursor.execute("SELECT MIN(distance_cm), MAX(distance_cm), AVG(distance_cm) FROM distance_logs")
     stats = cursor.fetchone()
     conn.close()
-    return data, stats
+    return data[::-1], stats  # Reverse to show oldest-to-newest in chart
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
-    threshold = 15  # Default threshold, could be dynamic
-
-    if request.method == "POST":
-        threshold = int(request.form["threshold"])
-
     data, stats = get_data()
-    return render_template("index.html", data=data, stats=stats, threshold=threshold)
+    return render_template("index.html", data=data, stats=stats)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
