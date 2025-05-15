@@ -10,20 +10,20 @@ DB_CONFIG = {
     'database': 'iot_car_data'
 }
 
-def get_data():
+@app.route('/')
+def dashboard():
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM distance_logs ORDER BY timestamp DESC LIMIT 10")
+    cursor.execute("SELECT * FROM distance_logs ORDER BY timestamp DESC LIMIT 50")
     data = cursor.fetchall()
-    cursor.execute("SELECT MIN(distance_cm), MAX(distance_cm), AVG(distance_cm) FROM distance_logs")
-    stats = cursor.fetchone()
+    cursor.close()
     conn.close()
-    return data[::-1], stats  # Reverse to show oldest-to-newest in chart
 
-@app.route("/")
-def index():
-    data, stats = get_data()
-    return render_template("index.html", data=data, stats=stats)
+    # Prepare data for chart (reverse for time order)
+    chart_labels = [row['timestamp'].strftime('%H:%M:%S') for row in reversed(data)]
+    chart_values = [row['distance_cm'] for row in reversed(data)]
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    return render_template('dashboard.html', data=data, labels=chart_labels, values=chart_values)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
