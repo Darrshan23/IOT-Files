@@ -1,3 +1,7 @@
-CREATE USER 'iotuser'@'localhost' IDENTIFIED BY 'iotpass';
-GRANT ALL PRIVILEGES ON iot_car_data.* TO 'iotuser'@'localhost';
-FLUSH PRIVILEGES;
+kali@raspberry:~/Desktop $ python3 iotcar.py
+^CTraceback (most recent call last):
+  File "/home/kali/Desktop/iotcar.py", line 20, in <module>
+    line = arduino.readline().decode().strip()
+  File "/usr/lib/python3/dist-packages/serial/serialposix.py", line 547, in read
+    ready, _, _ = select.select([self.fd, self.pipe_abort_read_r], [], [], timeout.time_left())
+KeyboardInterrupt
