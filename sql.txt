@@ -10,3 +10,11 @@ CREATE TABLE distance_logs (
     distance_cm INT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE distance_logs
+ADD COLUMN direction VARCHAR(10),
+ADD COLUMN obstacle_detected BOOLEAN,
+ADD COLUMN event_type VARCHAR(20),
+ADD COLUMN car_speed INT,
+ADD COLUMN servo_angle INT;
+
